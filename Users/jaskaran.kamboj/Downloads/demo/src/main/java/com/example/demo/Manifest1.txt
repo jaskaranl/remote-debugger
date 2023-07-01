@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Agent-Class: com.example.demo.JavaAgent2
+Permissions: all-permissions
+Can-Retransform-Classes: true
