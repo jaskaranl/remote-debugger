@@ -1,17 +1,17 @@
 package com.example.demo;
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.Instrumentation;
-import java.lang.instrument.IllegalClassFormatException;
-import java.security.ProtectionDomain;
 
 import com.sun.tools.attach.VirtualMachine;
-import javassist.*;
-import org.springframework.javapoet.ClassName;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
 
 import java.io.ByteArrayInputStream;
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
+import java.lang.instrument.Instrumentation;
+import java.security.ProtectionDomain;
 
-
-public class MyJavaAgent{
+public class jj {
     public static void agentmain(String agentArgs, Instrumentation inst) {
 
         inst.addTransformer(new ClassFileTransformer() {
@@ -60,36 +60,35 @@ public class MyJavaAgent{
 //
             CtClass cc = cp.makeClass(new ByteArrayInputStream(classfileBuffer));
 
-            CtMethod m = cc.getDeclaredMethod("greet");
-//            CtMethod k=cc.getDeclaredMethod("help");
-//
-//            k.insertAfter("{ System.out.println(\"Non-breaking breakpoint hit at end of methoddd\"); }");
+
+            System.out.println(1);
 
 
-               m.insertBefore("{ System.out.println(\"Non-breaking breakpoint hit at start of method\"); }");
-            m.insertAfter("{ System.out.println(\"Non-breaking breakpoint hit at end of method\"); }");
 
 
             byte[] bytecode = cc.toBytecode();
-            cc.defrost();
+            cc.detach();
             return bytecode;
         } catch (Exception e) {
 
             throw new RuntimeException("Failed to instrument class", e);
         }
     }
-
+    public static int count=0;
     public static void main(String[] args)  throws Exception{
-        VirtualMachine vm = VirtualMachine.attach("41063");
+        VirtualMachine vm = VirtualMachine.attach("9913");
+
         try {
 //			ClassPool cp = ClassPool.getDefault();
 
-            vm.loadAgent("/Users/jaskaran.kamboj/Downloads/demo/my-java--agent.jar");
+            vm.loadAgent("/Users/jaskaran.kamboj/Downloads/demo/gg.jar");
 
         }
         finally {
             vm.detach();
         }
+
+
 
     }
 }
