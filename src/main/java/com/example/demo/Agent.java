@@ -16,7 +16,6 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class Agent {
-
     private static Set<String> transformedClasses = new HashSet<>();
     public static void agentmain(String agentArgs, Instrumentation inst) {
 
@@ -25,7 +24,7 @@ public class Agent {
             @Override
             public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
 
-                //                System.out.println(className);
+
                 if (className.equals("com/example/demo/RestController")&& !transformedClasses.contains(className)) {
                     transformedClasses.add(className);
                     return addLogging(classfileBuffer,className);
@@ -39,15 +38,16 @@ public class Agent {
 
 
         try {
+
             Class<?>[] classes = inst.getAllLoadedClasses();
             for (Class<?> clazz : classes) {
                 if (clazz.getName().equals("com.example.demo.RestController") && !transformedClasses.contains(clazz.getName()))
                 {
                     inst.retransformClasses(Class.forName("com.example.demo.RestController"));
-//                    transformedClasses.add(clazz.getName());
+                    transformedClasses.add(clazz.getName());
                 }
             }
-//            inst.retransformClasses(Class.forName("com.example.demo.RestController"));
+//
         } catch (Exception e) {
             throw new RuntimeException("Failed to retransform class", e);
         }
@@ -66,7 +66,7 @@ public class Agent {
             CtMethod k=cc.getDeclaredMethod("greet");
 
 //            k.insertBefore("System.out.println(java.util.Arrays.toString($args));");
-            System.out.println(1000);
+
 
 
 
