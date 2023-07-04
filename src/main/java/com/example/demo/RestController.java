@@ -19,8 +19,6 @@ public class RestController {
             return "help";
                 greet(number,value);
 
-
-
         return "greetPage";
     }
 @GetMapping("home")

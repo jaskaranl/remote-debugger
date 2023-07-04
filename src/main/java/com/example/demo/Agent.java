@@ -24,11 +24,11 @@ public class Agent {
     public static void agentmain(String agentArgs, Instrumentation inst) {
 
 
-
         inst.addTransformer(new ClassFileTransformer() {
 
             @Override
             public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+
 
 
                 if (className.equals("com/example/demo/RestController")&& !transformedClasses.contains(className)) {
@@ -101,13 +101,12 @@ public class Agent {
             beforeCode.append("System.out.println(\"\"); }");
 
             k.insertBefore(beforeCode.toString());
-//            k.insertAfter("System.out.println(\"Calling method: \" + javassist.runtime.Cflow.name($cflow));");
-//            k.insertAfter("{ System.out.println(\"Non-breaking breakpoint hit at end of method\"); }");
+
         }
     public static void main(String[] args)  throws Exception{
         long pid=ManagementFactory.getRuntimeMXBean().getPid();
         System.out.println(pid);
-        VirtualMachine vm = VirtualMachine.attach("84402");
+        VirtualMachine vm = VirtualMachine.attach("4469");
 
         try {
             vm.loadAgent("/Users/jaskaran.kamboj/Downloads/demo/my-javaagent.jar");
