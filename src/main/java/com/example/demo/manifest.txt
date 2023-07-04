@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Agent-Class: com.example.demo.MyJavaAgent
+Premain-Class: com.example.demo.Agent
 Permissions: all-permissions
 Can-Retransform-Classes: true
