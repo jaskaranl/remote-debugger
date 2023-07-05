@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
 Premain-Class: com.example.demo.Agent
+Agent-Class: com.example.demo.Agent
 Permissions: all-permissions
 Can-Retransform-Classes: true

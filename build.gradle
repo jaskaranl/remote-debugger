@@ -19,11 +19,16 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
+	implementation fileTree(dir: "/Users/jaskaran.kamboj/Downloads/demo", include: "*.jar")
 
 //	implementation files("${System.properties['java.home']}/../lib/tools.jar")
 }
 
-
+task run(type: JavaExec) {
+	mainClass = 'com.example.demo.DemoApplication'
+	classpath =sourceSets.main.runtimeClasspath
+	jvmArgs = ['-javaagent:my-java-agent.jar=src/main/java/com/example/demo/breakpointsMethods.txt ']
+}
 tasks.named('test') {
 	useJUnitPlatform()
 }
