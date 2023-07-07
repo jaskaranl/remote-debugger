@@ -1,0 +1,36 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.1.1'
+	id 'io.spring.dependency-management' version '1.1.0'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '17'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation group: 'org.javassist', name: 'javassist', version: '3.18.2-GA'
+	implementation fileTree(dir: "/Users/jaskaran.kamboj/Downloads/demo", include: "*.jar")
+
+
+
+}
+
+task run(type: JavaExec) {
+	mainClass = 'com.example.RemoteDebugger.RemoteDebuggerApplication'
+	classpath =sourceSets.main.runtimeClasspath
+	jvmArgs = ['-javaagent:javaagent.jar']
+}
+tasks.named('test') {
+	useJUnitPlatform()
+}
