@@ -1,4 +1,4 @@
-package com.example.RemoteDebugger.pojo;
+package com.example.remotedebugger.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

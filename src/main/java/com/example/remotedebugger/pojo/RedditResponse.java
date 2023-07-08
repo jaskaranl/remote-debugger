@@ -1,11 +1,12 @@
-package com.example.RemoteDebugger.pojo;
+package com.example.remotedebugger.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Child {
-    private String kind;
-    private MainObjective data;
+public class RedditResponse {
+    public String kind;
+    public Data data;
+
     public String getKind() {
         return kind;
     }
@@ -14,13 +15,11 @@ public class Child {
         this.kind = kind;
     }
 
-    public MainObjective getData() {
+    public Data getData() {
         return data;
     }
 
-    public void setData(MainObjective data) {
+    public void setData(Data data) {
         this.data = data;
     }
-
-
 }

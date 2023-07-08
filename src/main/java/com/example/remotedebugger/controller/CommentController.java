@@ -1,15 +1,13 @@
-package com.example.RemoteDebugger.controller;
+package com.example.remotedebugger.controller;
 
-import com.example.RemoteDebugger.Service.RedditService;
-import com.example.RemoteDebugger.pojo.Child;
-import com.example.RemoteDebugger.pojo.MainObjective;
-import com.example.RemoteDebugger.pojo.RedditResponse;
+import com.example.remotedebugger.Service.RedditService;
+import com.example.remotedebugger.pojo.Child;
+import com.example.remotedebugger.pojo.MainObjective;
+import com.example.remotedebugger.pojo.RedditResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.tools.javac.Main;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -58,8 +56,7 @@ public class CommentController {
         return "greetPage";
     }
     @GetMapping("/getdata")
-    public RedditResponse fetchData()
-    {
+    public RedditResponse fetchData() {
 
         String token1="Bearer "+token;
         RestTemplate restTemplate=new RestTemplate();
@@ -73,10 +70,7 @@ public class CommentController {
         final int SIZE=responseEntity.getBody().getData().getChildren().size();
         List<Child> children = responseEntity.getBody().getData().getChildren();
         for(int i=0;i<SIZE;i++) {
-
             redService.storeInDB(children.get(i).getData());
-
-
         }
 
         return responseEntity.getBody();
@@ -84,16 +78,15 @@ public class CommentController {
     }
 
     @GetMapping("/db/findall")
-    public List<MainObjective>getAllDataMethod()
-    {
+    public List<MainObjective>getAllDataMethod() {
         List<MainObjective> result=redService.getAllDataMethod();
         return result;
     }
+
     @GetMapping("db/find/{AuthorName}")
-    public List<MainObjective> findByAuthorNameMethod(@PathVariable String AuthorName)
-  {
+    public List<MainObjective> findByAuthorNameMethod(@PathVariable String AuthorName) {
       return redService.getAllByAuthorMethod(AuthorName);
-  }
+    }
 
     @DeleteMapping("/db/delete/{id}")
     public void deleteDataMethod(@PathVariable String id)
@@ -102,33 +95,28 @@ public class CommentController {
     }
 
     @DeleteMapping("/db/delete/author/{author}")
-    public void deleteDataMethodAuthor(@PathVariable String author)
-    {
+    public void deleteDataMethodAuthor(@PathVariable String author) {
         redService.DeleteMethodAuthor(author);
     }
 
 
-  @GetMapping("db/all/{username}")
-    public List<MainObjective> findWithByUsername(@PathVariable String username)
-  {
+    @GetMapping("db/all/{username}")
+    public List<MainObjective> findWithByUsername(@PathVariable String username) {
       //delete this line
       return redService.findWithByUsername(username);
-  }
+    }
     @GetMapping("db/all/")
-    public List<MainObjective> allFind()
-    {
+    public List<MainObjective> allFind() {
         return redService.all();
     }
-  @GetMapping("db/sort")
-    public List<Document>sorting()
-  {
+
+    @GetMapping("db/sort")
+    public List<Document>sorting() {
       return redService.sorting();
-  }
+    }
 
-
-  @PostMapping("reddit/post")
-  public String postReddit()
-  {
+    @PostMapping("reddit/post")
+    public String postReddit() {
 
       HttpHeaders head=new HttpHeaders();
       head.setBearerAuth(token);
@@ -148,6 +136,6 @@ public class CommentController {
 
       return "submit";
 
-  }
+    }
 
 }

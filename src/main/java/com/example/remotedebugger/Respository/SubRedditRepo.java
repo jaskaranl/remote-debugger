@@ -1,6 +1,6 @@
-package com.example.RemoteDebugger.Respository;
+package com.example.remotedebugger.Respository;
 
-import com.example.RemoteDebugger.pojo.MainObjective;
+import com.example.remotedebugger.pojo.MainObjective;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;

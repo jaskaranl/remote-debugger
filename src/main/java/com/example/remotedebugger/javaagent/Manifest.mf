@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Premain-Class: com.example.RemoteDebugger.javaagent.javaAgent
+Premain-Class: com.example.remotedebugger.javaagent.javaAgent
 Can-Redefine-Classes: true
 Can-Retransform-Classes: true

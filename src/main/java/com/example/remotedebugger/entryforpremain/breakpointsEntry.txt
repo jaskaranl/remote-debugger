@@ -1,0 +1,2 @@
+com/example/remotedebugger/controller/CommentController:greet:findByAuthorNameMethod
+com/example/remotedebugger/Service/RedditService:findWithByUsername
