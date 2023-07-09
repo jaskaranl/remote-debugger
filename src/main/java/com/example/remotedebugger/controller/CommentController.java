@@ -46,17 +46,21 @@ public class CommentController {
         token=map.get("access_token");
         return "homePage";
     }
+
     @GetMapping("/javaagent/{value}/{number}")
-    public String greet(@PathVariable String value,@PathVariable String number)
+    public static String greet(@PathVariable String value,@PathVariable String number)
     {
+
         if (value.equals("200"))
             return "help";
         greet(number, value);
 
         return "greetPage";
     }
+//10468
+//159620
     @GetMapping("/getdata")
-    public RedditResponse fetchData() {
+    public RedditResponse fetchDataFromReddit() {
 
         String token1="Bearer "+token;
         RestTemplate restTemplate=new RestTemplate();

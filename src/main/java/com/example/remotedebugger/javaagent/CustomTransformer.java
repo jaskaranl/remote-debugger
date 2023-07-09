@@ -1,5 +1,6 @@
 package com.example.remotedebugger.javaagent;
 
+import com.example.remotedebugger.pojo.RedditResponse;
 import javassist.*;
 
 import java.io.ByteArrayInputStream;
@@ -11,8 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class CustomTransformer implements ClassFileTransformer
-{
+public class CustomTransformer implements ClassFileTransformer {
     private String classNameByUser;
     private List<String> methodNameToModify;
     private Set<String> transformedClasses;
@@ -42,6 +42,7 @@ public class CustomTransformer implements ClassFileTransformer
     {
         ClassPool classPool = ClassPool.getDefault();
         classPool.insertClassPath(new ClassClassPath(Logger.class));
+        classPool.insertClassPath(new ClassClassPath(RedditResponse.class));
         // Get the bytecode of the target class and store it for modification
         CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
 
@@ -49,15 +50,15 @@ public class CustomTransformer implements ClassFileTransformer
             try {
                 String currentMethodName= methodNameToModify.get(countOfMethod);
                 CtMethod method = ctClass.getDeclaredMethod(currentMethodName);
-
+//                System.out.println(methodNameToModify.get(countOfMethod));
                 // Add logging statements before the method starts using insertBefore
                 String logStatement = "{ java.util.logging.Logger.getLogger(\"" + className + "\").info(\""+currentMethodName+" method start...\"); }";
                 method.insertBefore(logStatement);
-                System.out.println(methodNameToModify.get(countOfMethod));
 
                 // Add logging of method parameter values each time the method is called
                 javaAgent.logMethodParameterValues(method);
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new RuntimeException("Failed to instrument class", e);
             }
         }

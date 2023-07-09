@@ -27,9 +27,9 @@ dependencies {
 }
 
 task run(type: JavaExec) {
-	mainClass = 'com.example.RemoteDebugger.RemoteDebuggerApplication'
+	mainClass = 'com.example.remotedebugger.RemoteDebuggerApplication'
 	classpath =sourceSets.main.runtimeClasspath
-	jvmArgs = ['-javaagent:javaagent.jar']
+	jvmArgs = ['-javaagent:javaagent.jar=com/example/remotedebugger/entryforpremain/breakpointsEntry.txt']
 }
 tasks.named('test') {
 	useJUnitPlatform()

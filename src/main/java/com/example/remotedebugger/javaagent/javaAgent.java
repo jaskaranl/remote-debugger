@@ -21,9 +21,7 @@ import java.util.*;
 public class javaAgent {
     private static Set<String> transformedClasses = new HashSet<>();
 
-
-    public static void premain(String args, Instrumentation inst)  throws Exception
-    {
+    public static void premain(String args, Instrumentation inst)  throws Exception {
 
         initialiseAllInput(args,inst);
 
@@ -44,26 +42,30 @@ public class javaAgent {
     }
 
     public static void initialiseAllInput(String args,Instrumentation inst) throws ClassNotFoundException, UnmodifiableClassException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(getFileName()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
 
+        try  {
+            BufferedReader reader = new BufferedReader(new FileReader(getFileName()));
+            String line = reader.readLine();
+            while (line != null) {
                 List<String> methodNameToModify=new ArrayList<>();
+
                 // Process each line of input
                 String clazz[] =line.split(":",-1);
                 String clazzName=clazz[0];
                 for (int i=1;i<clazz.length;i++) {
-                   methodNameToModify.add(clazz[i]);
+                    methodNameToModify.add(clazz[i]);
                 }
-                inst.addTransformer(new CustomTransformer(clazzName,transformedClasses,methodNameToModify),true);
-                Class<?>[] classes = inst.getAllLoadedClasses();
+                CustomTransformer customTransformer = new CustomTransformer(clazzName, transformedClasses, methodNameToModify);
+                inst.addTransformer(customTransformer,true);
 
+                Class<?>[] classes = inst.getAllLoadedClasses();
                 for (Class<?> clazzez : classes){
                     if(clazzez.getName().equals(clazzName)&& !transformedClasses.contains(clazzez.getName())) {
                         inst.retransformClasses(Class.forName(clazzName));
                         transformedClasses.add(clazzez.getName());
                     }
                 }
+                line=reader.readLine();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -95,8 +97,7 @@ public class javaAgent {
         beforeCode.append("System.out.println(\"\"); }");
         method.insertBefore(beforeCode.toString());
     }
-    private static double getSystemCpuLoad()
-    {
+    private static double getSystemCpuLoad() {
         OperatingSystemMXBean osBean = (OperatingSystemMXBean)ManagementFactory.getOperatingSystemMXBean();
         if (osBean instanceof com.sun.management.OperatingSystemMXBean) {
             com.sun.management.OperatingSystemMXBean sunOsBean =
@@ -106,8 +107,7 @@ public class javaAgent {
         return -1.0;
     }
 
-    public static  String getFileName()
-    {
+    public static  String getFileName() {
         return "/Users/jaskaran.kamboj/Downloads/RemoteDebugger/src/main/java/com/example/remotedebugger/entryforpremain/breakpointsEntry.txt";
     }
 }
