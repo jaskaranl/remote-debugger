@@ -9,10 +9,7 @@ public class BreakpointResponse {
         this.methodName = methodName;
     }
 
-
-    public BreakpointResponse() {
-
-    }
+    public BreakpointResponse() {}
     public String getClassName() {
         return className;
     }

@@ -9,26 +9,31 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
 public class CustomTransformer implements ClassFileTransformer {
-    private HashMap<String ,List<String>> transformedClassesMap;
+
     private String classNameToModify;
     private String methodNameToModify;
-    public CustomTransformer(HashMap<String ,List<String>> transformedClassesMap) {
-        this.transformedClassesMap=transformedClassesMap;
-    }
+    private String modifiedBeforeChecker;
+
     public CustomTransformer(String className,String methodName) {
         this.classNameToModify=className;
         this.methodNameToModify=methodName;
+        this.modifiedBeforeChecker=className+methodName;
     }
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+
+
         if(className.equals(classNameToModify)) {
             try {
-                return addLogging(classfileBuffer, className, loader,methodNameToModify);
+
+                ClassPool classPool = new ClassPool(true);
+                return addLogging(classfileBuffer, className, loader,methodNameToModify,classPool);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -36,20 +41,14 @@ public class CustomTransformer implements ClassFileTransformer {
         return classfileBuffer;
     }
 
-    private static byte[] addLogging(byte[] classfileBuffer, String className,ClassLoader loader,String methodNameToModify)   throws IOException,CannotCompileException {
+    private static byte[] addLogging(byte[] classfileBuffer, String className,ClassLoader loader,String methodNameToModify,ClassPool classPool)   throws IOException,CannotCompileException {
 
-        ClassPool classPool = new ClassPool(true);
-            classPool.appendClassPath(new LoaderClassPath(loader));
+        classPool.appendClassPath(new LoaderClassPath(loader));
         CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
-
-
             try {
                 CtMethod method = ctClass.getDeclaredMethod(methodNameToModify);
                 String logStatement = "{ java.util.logging.Logger.getLogger(\"" + className + "\").info(\""+methodNameToModify+" method start...\"); }";
                 method.insertBefore(logStatement);
-
-//
-                // Add logging of method parameter values each time the method is called
                 javaAgent.logMethodParameterValues(method);
             } catch (Exception e) {
                 e.printStackTrace();

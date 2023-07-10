@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.instrument.UnmodifiableClassException;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+
 import org.bson.Document;
 @RestController
 public class CommentController {
     String token;
+    private  static Set<String> methodModifiedSet=new HashSet<>();
     @Autowired
     private RedditService redService;
 
@@ -141,6 +141,10 @@ public class CommentController {
     public String breakpoint(@RequestBody BreakpointResponse  response) throws ClassNotFoundException, UnmodifiableClassException {
         String className=response.getClassName();
         String methodName=response.getMethodName();
+        if(methodModifiedSet.contains(methodName)){
+            return "already added";
+        }
+        methodModifiedSet.add(methodName);
         CustomTransformer customTransformer=new CustomTransformer(className,methodName);
         javaAgent.instrumentation.addTransformer(customTransformer,true);
         javaAgent.instrumentation.retransformClasses(Class.forName(className.replace('/','.')));

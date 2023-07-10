@@ -7,16 +7,11 @@ import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.LocalVariableAttribute;
 import javassist.bytecode.MethodInfo;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+
 import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-//import com.sun.management.OperatingSystemMXBean;
+
 import java.lang.reflect.Modifier;
-import java.util.*;
+
 
 public class javaAgent {
 
