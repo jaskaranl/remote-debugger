@@ -1,6 +1,9 @@
 package com.example.remotedebugger.controller;
 
 import com.example.remotedebugger.Service.RedditService;
+import com.example.remotedebugger.javaagent.CustomTransformer;
+import com.example.remotedebugger.javaagent.javaAgent;
+import com.example.remotedebugger.pojo.BreakpointResponse;
 import com.example.remotedebugger.pojo.Child;
 import com.example.remotedebugger.pojo.MainObjective;
 import com.example.remotedebugger.pojo.RedditResponse;
@@ -11,6 +14,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.instrument.UnmodifiableClassException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -20,9 +24,9 @@ public class CommentController {
     String token;
     @Autowired
     private RedditService redService;
+
     @GetMapping("/")
-    public String homePage()
-    {
+    public String homePage() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setBasicAuth("E7LuXktBtTf_1rm1bDopgQ", "exavXudnpDU_wexKGONVSw5Opyc1lA");
@@ -34,13 +38,11 @@ public class CommentController {
 
         Map<String,String> map;
         try {
-
             ObjectMapper mapper=new ObjectMapper();
             map=mapper.readValue(response.getBody(), new TypeReference<Map<String, String>>() {
             });
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             throw new RuntimeException(e);
         }
         token=map.get("access_token");
@@ -48,17 +50,13 @@ public class CommentController {
     }
 
     @GetMapping("/javaagent/{value}/{number}")
-    public static String greet(@PathVariable String value,@PathVariable String number)
-    {
-
+    public static String greet(@PathVariable String value,@PathVariable String number) {
         if (value.equals("200"))
             return "help";
-        greet(number, value);
 
+        greet(number, value);
         return "greetPage";
     }
-//10468
-//159620
     @GetMapping("/getdata")
     public RedditResponse fetchDataFromReddit() {
 
@@ -76,9 +74,7 @@ public class CommentController {
         for(int i=0;i<SIZE;i++) {
             redService.storeInDB(children.get(i).getData());
         }
-
         return responseEntity.getBody();
-
     }
 
     @GetMapping("/db/findall")
@@ -140,6 +136,15 @@ public class CommentController {
 
       return "submit";
 
+    }
+    @PostMapping("/addbreakpoint")
+    public String breakpoint(@RequestBody BreakpointResponse  response) throws ClassNotFoundException, UnmodifiableClassException {
+        String className=response.getClassName();
+        String methodName=response.getMethodName();
+        CustomTransformer customTransformer=new CustomTransformer(className,methodName);
+        javaAgent.instrumentation.addTransformer(customTransformer,true);
+        javaAgent.instrumentation.retransformClasses(Class.forName(className.replace('/','.')));
+        return "added breakpoint";
     }
 
 }

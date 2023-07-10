@@ -15,7 +15,6 @@ public class RemoteDebuggerApplication {
 
 	public static void main(String[] args) {
 
-//		long startTime = System.nanoTime();
 		OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
 		double startCpuLoad = osBean.getSystemCpuLoad();
 		long startTime = System.nanoTime();
@@ -26,7 +25,7 @@ public class RemoteDebuggerApplication {
 		long overheadTime = endTime - startTime;
 		double cpuLoad = endCpuLoad - startCpuLoad;
 		System.out.println(" time for class "  + ": " + overheadTime*1.0e-9 + " seconds");
-		System.out.println("CPU load during operation: " + cpuLoad);
+		System.out.println("CPU load during operation: " + cpuLoad*100);
 
 	}
 
