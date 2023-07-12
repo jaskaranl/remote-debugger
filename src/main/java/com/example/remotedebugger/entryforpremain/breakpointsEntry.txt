@@ -1,2 +1,18 @@
 com/example/remotedebugger/controller/CommentController:fetchDataFromReddit:greet:findByAuthorNameMethod:homePage:getAllDataMethod:findByAuthorNameMethod
 com/example/remotedebugger/Service/RedditService:findWithByUsername
+
+
+{
+    "responseList": [
+        {
+            "className": "com/example/remotedebugger/controller/CommentController",
+            "method": [
+                {
+                    "methodName": "greet",
+                    "codeToExecute":["if(a=20)"]
+
+                }
+            ]
+        }
+    ]
+}

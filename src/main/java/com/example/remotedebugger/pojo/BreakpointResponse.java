@@ -1,15 +1,16 @@
 package com.example.remotedebugger.pojo;
 
+import java.util.List;
+
 public class BreakpointResponse {
-    String className;
-    String methodName;
+    private String className;
+    private List<MethodInfo> method;
 
-    public BreakpointResponse(String className, String methodName) {
+    public BreakpointResponse(String className, List<MethodInfo> method) {
         this.className = className;
-        this.methodName = methodName;
+        this.method = method;
     }
-
-    public BreakpointResponse() {}
+    public BreakpointResponse(){}
     public String getClassName() {
         return className;
     }
@@ -18,11 +19,11 @@ public class BreakpointResponse {
         this.className = className;
     }
 
-    public String getMethodName() {
-        return methodName;
+    public List<MethodInfo> getMethod() {
+        return method;
     }
 
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
+    public void setMethod(List<MethodInfo> method) {
+        this.method = method;
     }
 }

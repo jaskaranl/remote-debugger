@@ -18,22 +18,30 @@ public class CustomTransformer implements ClassFileTransformer {
 
     private String classNameToModify;
     private String methodNameToModify;
-    private String modifiedBeforeChecker;
+    private String modifiedBeforeCheck;
+    private String codeToExecute;
 
     public CustomTransformer(String className,String methodName) {
         this.classNameToModify=className;
         this.methodNameToModify=methodName;
-        this.modifiedBeforeChecker=className+methodName;
+        this.modifiedBeforeCheck=className+methodName;
+    }
+    public CustomTransformer(String className,String methodName,String codeToExecute) {
+        this.classNameToModify=className;
+        this.methodNameToModify=methodName;
+        this.codeToExecute=codeToExecute;
     }
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+                            ProtectionDomain protectionDomain, byte[] classfileBuffer)
+            throws IllegalClassFormatException
+    {
 
         if(className.equals(classNameToModify)) {
             try {
-
                 ClassPool classPool = new ClassPool(true);
-                return addLogging(classfileBuffer, className, loader,methodNameToModify,classPool);
+                return addLogging(classfileBuffer, className, loader,methodNameToModify,classPool,codeToExecute);
+//                return addLogging(classfileBuffer, className, loader,methodNameToModify,classPool);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -41,16 +49,49 @@ public class CustomTransformer implements ClassFileTransformer {
         return classfileBuffer;
     }
 
-    private static byte[] addLogging(byte[] classfileBuffer, String className,ClassLoader loader,String methodNameToModify,ClassPool classPool)   throws IOException,CannotCompileException {
+    private byte[] addLogging(byte[] classfileBuffer, String className,
+                               ClassLoader loader, String methodNameToModify,
+                               ClassPool classPool, String codeToExecute)
+            throws IOException,CannotCompileException
+    {
 
         classPool.appendClassPath(new LoaderClassPath(loader));
         CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
-            try {
-                CtMethod method = ctClass.getDeclaredMethod(methodNameToModify);
-                String logStatement = "{ java.util.logging.Logger.getLogger(\"" + className + "\").info(\""+methodNameToModify+" method start...\"); }";
-                method.insertBefore(logStatement);
-                javaAgent.logMethodParameterValues(method);
-            } catch (Exception e) {
+
+        try {
+            CtMethod method = ctClass.getDeclaredMethod(methodNameToModify);
+            StringBuilder condition=new StringBuilder();
+            condition.append(codeToExecute);
+            method.insertAfter(condition.toString());
+////            String logStatement = "{ java.util.logging.Logger.getLogger(\"" + className + "\").info(\""+methodNameToModify+" method start...\"); }";
+////            condition.append(logStatement);
+////            method.insertAfter(logStatement);
+////            method.insertAfter(condition.toString());
+////            javaAgent.logMethodParameterValues(method);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to instrument class", e);
+        }
+
+        byte[] bytecode = ctClass.toBytecode();
+        ctClass.defrost();
+
+        return bytecode;
+    }
+
+    private static byte[] addLoggingFirst(byte[] classfileBuffer, String className,ClassLoader loader,
+                                     String methodNameToModify,ClassPool classPool)
+            throws IOException,CannotCompileException
+    {
+        classPool.appendClassPath(new LoaderClassPath(loader));
+        CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
+        try {
+            CtMethod method = ctClass.getDeclaredMethod(methodNameToModify);
+            String logStatement = "{ java.util.logging.Logger.getLogger(\"" + className + "\").info(\""+methodNameToModify+" method start...\"); }";
+
+            method.insertAfter(logStatement);
+            javaAgent.logMethodParameterValues(method);
+        } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException("Failed to instrument class", e);
             }
@@ -58,6 +99,7 @@ public class CustomTransformer implements ClassFileTransformer {
         byte[] bytecode = ctClass.toBytecode();
         ctClass.defrost();
         return bytecode;
+
     }
 
 }

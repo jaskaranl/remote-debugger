@@ -6,24 +6,17 @@ import javassist.NotFoundException;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.LocalVariableAttribute;
 import javassist.bytecode.MethodInfo;
-
-
 import java.lang.instrument.Instrumentation;
-
 import java.lang.reflect.Modifier;
-
 
 public class javaAgent {
 
     public static Instrumentation instrumentation;
     public static void premain(String args, Instrumentation inst)  throws Exception {
-
         instrumentation=inst;
-//        initialiseAllInput(args,inst);
     }
 
-    public static void logMethodParameterValues(CtMethod method) throws NotFoundException, CannotCompileException
-    {
+    public static void logMethodParameterValues(CtMethod method) throws NotFoundException, CannotCompileException {
         MethodInfo methodInfo = method.getMethodInfo();
         CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
 
@@ -56,7 +49,7 @@ public class javaAgent {
 //        }
 //        return -1.0;
 //    }
-    public Instrumentation getInstrumentation()
+    public static Instrumentation getInstrumentation()
     {
         return instrumentation;
     }
