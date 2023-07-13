@@ -8,11 +8,7 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
+
 
 public class CustomTransformer implements ClassFileTransformer {
 
@@ -27,12 +23,46 @@ public class CustomTransformer implements ClassFileTransformer {
         this.methodNameToModify=methodName;
 
     }
+    public CustomTransformer(){}
     public CustomTransformer(String className,String methodName,String codeToExecute,int lineNumber ) {
         this.classNameToModify=className;
         this.methodNameToModify=methodName;
         this.codeToExecute=codeToExecute;
         this.lineNumber=lineNumber;
     }
+
+    public String getClassNameToModify() {
+        return classNameToModify;
+    }
+
+    public void setClassNameToModify(String classNameToModify) {
+        this.classNameToModify = classNameToModify;
+    }
+
+    public String getMethodNameToModify() {
+        return methodNameToModify;
+    }
+
+    public void setMethodNameToModify(String methodNameToModify) {
+        this.methodNameToModify = methodNameToModify;
+    }
+
+    public String getCodeToExecute() {
+        return codeToExecute;
+    }
+
+    public void setCodeToExecute(String codeToExecute) {
+        this.codeToExecute = codeToExecute;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain, byte[] classfileBuffer)
@@ -64,7 +94,9 @@ public class CustomTransformer implements ClassFileTransformer {
             CtMethod method = ctClass.getDeclaredMethod(methodNameToModify);
             StringBuilder condition=new StringBuilder();
             condition.append(codeToExecute);
-            method.insertAt(lineNumber,condition.toString());
+            int i = method.insertAt(lineNumber, condition.toString());
+//            System.out.println(condition);
+//            System.out.println(i);
 ////            String logStatement = "{ java.util.logging.Logger.getLogger(\"" + className + "\").info(\""+methodNameToModify+" method start...\"); }";
 ////            condition.append(logStatement);
 ////            method.insertAfter(logStatement);

@@ -1,12 +1,11 @@
 package com.example.remotedebugger.controller;
 
 import com.example.remotedebugger.Service.RedditService;
-import com.example.remotedebugger.javaagent.CustomTransformer;
+import com.example.remotedebugger.javaagent.CustomTranformers;
 import com.example.remotedebugger.javaagent.javaAgent;
 import com.example.remotedebugger.pojo.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javassist.ClassPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +15,18 @@ import java.lang.instrument.UnmodifiableClassException;
 import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.bson.Document;
+
 @RestController
 public class CommentController {
     String token;
-    private static Set<String> methodModifiedSet = new HashSet<>();
+    private ExecutorService executorService = Executors.newFixedThreadPool(50);
+    private HashMap<String,List<CustomTranformers>> classesModified=new HashMap<>();
     @Autowired
     private RedditService redService;
 
@@ -52,6 +57,7 @@ public class CommentController {
 
     @GetMapping("/javaagent/{value}/{number}")
     public static String greet(@PathVariable int value, @PathVariable String number) {
+        OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
         return "greetPage";
     }
 
@@ -139,41 +145,54 @@ public class CommentController {
     public String breakpoint(@RequestBody MultiBreakpoint response)
             throws ClassNotFoundException, UnmodifiableClassException
     {
-//        OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-//		double startCpuLoad = osBean.getSystemCpuLoad();
-//		long startTime = System.nanoTime();
         List<BreakpointResponse> responseList=response.getResponseList();
-        int SIZE = responseList.size();
+        List<Future<?>> futures = new ArrayList<>();
+        for (BreakpointResponse breakpointResponse:responseList) {
 
-        for (int i = 0; i < SIZE; i++) {
-            String className = responseList.get(i).getClassName();
-            List<MethodInfo> method = responseList.get(i).getMethod();
+            futures.add(executorService.submit(() -> {
+                String className = breakpointResponse.getClassName();
+                List<MethodInfo> method = breakpointResponse.getMethod();
+                CustomTranformers customTranformers = new CustomTranformers();
+                customTranformers.setClassName(className);
+                customTranformers.setMethod(method);
 
-            for (int j = 0; j < method.size(); j++) {
-                List<CodeWithLineNumber>codeToExecute=method.get(j).getCodeToExecute();
-
-                for(int k=0;k<codeToExecute.size();k++) {
-                    String code=codeToExecute.get(k).getCode();
-                    int lineNumber=codeToExecute.get(k).getLineNumber();
-                    String methodName=method.get(j).getMethodName();
-                    methodModifiedSet.add(methodName);
-//                    CustomTransformer customTransformer = new CustomTransformer(className,methodName);
-                    CustomTransformer customTransformer=new CustomTransformer(className,methodName,code,lineNumber);
-                    javaAgent.getInstrumentation().addTransformer(customTransformer, true);
-                    javaAgent.getInstrumentation().retransformClasses(Class.forName(className.replace('/', '.')));
+                if(classesModified.containsKey(className)){
+                    classesModified.get(className).add(customTranformers);
+                }else {
+                    List<CustomTranformers>add=new ArrayList<>();
+                    add.add(customTranformers);
+                    classesModified.put(className, add);
                 }
-            }
-        }
+                javaAgent.getInstrumentation().addTransformer(customTranformers,true);
+                try {
+                    javaAgent.getInstrumentation().retransformClasses(Class.forName(className.replace("/", ".")));
 
-//        double endCpuLoad = osBean.getSystemCpuLoad();
-//        long endTime = System.nanoTime();
-//        long overheadTime = endTime - startTime;
-//        double cpuLoad = endCpuLoad - startCpuLoad;
-//        System.out.println(" time for class "  + ": " + overheadTime*1.0e-9 + " seconds");
-//        System.out.println("CPU load during operation: " + cpuLoad*100);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }));
+        }
+        for (Future<?> future : futures) {
+        try {
+            future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
         return "added breakpoint";
     }
 
+    @GetMapping("remove/breakpoint/{classname}")
+    public String removeBreakpoint(@PathVariable String classname)
+    {
 
+    String temporaryClassname=classname.replace(",","/");
+        classesModified.get(temporaryClassname)
+                        .stream()
+                                .forEach(e-> System.out.println(javaAgent.getInstrumentation().removeTransformer(e)));
+
+       classesModified.remove(temporaryClassname);
+        return "transformers removed"+temporaryClassname;
+    }
 }
 
