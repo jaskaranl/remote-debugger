@@ -18,18 +18,20 @@ public class CustomTransformer implements ClassFileTransformer {
 
     private String classNameToModify;
     private String methodNameToModify;
-    private String modifiedBeforeCheck;
+
     private String codeToExecute;
+    private int lineNumber;
 
     public CustomTransformer(String className,String methodName) {
         this.classNameToModify=className;
         this.methodNameToModify=methodName;
-        this.modifiedBeforeCheck=className+methodName;
+
     }
-    public CustomTransformer(String className,String methodName,String codeToExecute) {
+    public CustomTransformer(String className,String methodName,String codeToExecute,int lineNumber ) {
         this.classNameToModify=className;
         this.methodNameToModify=methodName;
         this.codeToExecute=codeToExecute;
+        this.lineNumber=lineNumber;
     }
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -40,7 +42,7 @@ public class CustomTransformer implements ClassFileTransformer {
         if(className.equals(classNameToModify)) {
             try {
                 ClassPool classPool = new ClassPool(true);
-                return addLogging(classfileBuffer, className, loader,methodNameToModify,classPool,codeToExecute);
+                return addLogging(classfileBuffer, className, loader,classPool);
 //                return addLogging(classfileBuffer, className, loader,methodNameToModify,classPool);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -50,8 +52,8 @@ public class CustomTransformer implements ClassFileTransformer {
     }
 
     private byte[] addLogging(byte[] classfileBuffer, String className,
-                               ClassLoader loader, String methodNameToModify,
-                               ClassPool classPool, String codeToExecute)
+                               ClassLoader loader,
+                               ClassPool classPool)
             throws IOException,CannotCompileException
     {
 
@@ -62,7 +64,7 @@ public class CustomTransformer implements ClassFileTransformer {
             CtMethod method = ctClass.getDeclaredMethod(methodNameToModify);
             StringBuilder condition=new StringBuilder();
             condition.append(codeToExecute);
-            method.insertAfter(condition.toString());
+            method.insertAt(lineNumber,condition.toString());
 ////            String logStatement = "{ java.util.logging.Logger.getLogger(\"" + className + "\").info(\""+methodNameToModify+" method start...\"); }";
 ////            condition.append(logStatement);
 ////            method.insertAfter(logStatement);

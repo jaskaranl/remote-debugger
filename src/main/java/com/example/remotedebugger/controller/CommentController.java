@@ -136,11 +136,12 @@ public class CommentController {
     }
 
     @PostMapping("/addbreakpoint")
-    public String breakpoint(@RequestBody MultiBreakpoint response) throws ClassNotFoundException, UnmodifiableClassException {
-
-        OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-		double startCpuLoad = osBean.getSystemCpuLoad();
-		long startTime = System.nanoTime();
+    public String breakpoint(@RequestBody MultiBreakpoint response)
+            throws ClassNotFoundException, UnmodifiableClassException
+    {
+//        OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+//		double startCpuLoad = osBean.getSystemCpuLoad();
+//		long startTime = System.nanoTime();
         List<BreakpointResponse> responseList=response.getResponseList();
         int SIZE = responseList.size();
 
@@ -149,26 +150,27 @@ public class CommentController {
             List<MethodInfo> method = responseList.get(i).getMethod();
 
             for (int j = 0; j < method.size(); j++) {
-                List<String>codeToExecute=method.get(j).getCodeToExecute();
+                List<CodeWithLineNumber>codeToExecute=method.get(j).getCodeToExecute();
 
                 for(int k=0;k<codeToExecute.size();k++) {
-                    String code=codeToExecute.get(k);
+                    String code=codeToExecute.get(k).getCode();
+                    int lineNumber=codeToExecute.get(k).getLineNumber();
                     String methodName=method.get(j).getMethodName();
                     methodModifiedSet.add(methodName);
 //                    CustomTransformer customTransformer = new CustomTransformer(className,methodName);
-                    CustomTransformer customTransformer=new CustomTransformer(className,methodName,code);
+                    CustomTransformer customTransformer=new CustomTransformer(className,methodName,code,lineNumber);
                     javaAgent.getInstrumentation().addTransformer(customTransformer, true);
                     javaAgent.getInstrumentation().retransformClasses(Class.forName(className.replace('/', '.')));
                 }
             }
         }
 
-        double endCpuLoad = osBean.getSystemCpuLoad();
-        long endTime = System.nanoTime();
-        long overheadTime = endTime - startTime;
-        double cpuLoad = endCpuLoad - startCpuLoad;
-        System.out.println(" time for class "  + ": " + overheadTime*1.0e-9 + " seconds");
-        System.out.println("CPU load during operation: " + cpuLoad*100);
+//        double endCpuLoad = osBean.getSystemCpuLoad();
+//        long endTime = System.nanoTime();
+//        long overheadTime = endTime - startTime;
+//        double cpuLoad = endCpuLoad - startCpuLoad;
+//        System.out.println(" time for class "  + ": " + overheadTime*1.0e-9 + " seconds");
+//        System.out.println("CPU load during operation: " + cpuLoad*100);
         return "added breakpoint";
     }
 

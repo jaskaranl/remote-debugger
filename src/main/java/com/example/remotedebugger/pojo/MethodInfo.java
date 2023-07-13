@@ -4,28 +4,26 @@ import java.util.List;
 
 public class MethodInfo {
     String methodName;
-    List<String> codeToExecute;
+    List<CodeWithLineNumber> codeToExecute;
 
     public String getMethodName() {
         return methodName;
     }
 
-
     public void setMethodName(String methodName) {
         this.methodName = methodName;
     }
 
-    public List<String> getCodeToExecute() {
+    public List<CodeWithLineNumber> getCodeToExecute() {
         return codeToExecute;
     }
 
-    public void setCodeToExecute(List<String> codeToExecute) {
+    public void setCodeToExecute(List<CodeWithLineNumber> codeToExecute) {
         this.codeToExecute = codeToExecute;
     }
-
-    public MethodInfo(String methodName, List<String> codeToExecute) {
+    public MethodInfo(){}
+    public MethodInfo(String methodName, List<CodeWithLineNumber> codeToExecute) {
         this.methodName = methodName;
         this.codeToExecute = codeToExecute;
     }
-    public MethodInfo() {}
 }
