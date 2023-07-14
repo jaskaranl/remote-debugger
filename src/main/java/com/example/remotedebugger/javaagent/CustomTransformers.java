@@ -31,11 +31,12 @@ public class CustomTransformers implements ClassFileTransformer {
     }
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                            ProtectionDomain protectionDomain, byte[] classfileBuffer)
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer)
             throws IllegalClassFormatException {
+
         if (className.equals(classNametoModify)) {
             try {
+
                 ClassPool classPool = new ClassPool(true);
                 return addLogging(classfileBuffer, className, loader, classPool, methodInfo);
             } catch (Exception e) {
@@ -68,7 +69,6 @@ public class CustomTransformers implements ClassFileTransformer {
 
         byte[] bytecode = ctClass.toBytecode();
         ctClass.defrost();
-
         return bytecode;
     }
 }

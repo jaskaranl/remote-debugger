@@ -20,10 +20,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 @RestController
-public class CommentController {
+public class Controller {
     String token;
-    private ExecutorService executorService = Executors.newFixedThreadPool(20);
-    private  HashMap<String, List<CustomTransformers>>  classesModified = new HashMap<>();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(20);
+    private final HashMap<String, List<CustomTransformers>> classesModified = new HashMap<>();
     @Autowired
     private RedditService redService;
 
@@ -53,12 +53,13 @@ public class CommentController {
 
     @GetMapping("/javaagent/{value}/{number}")
     public static String greet(@PathVariable int value, @PathVariable String number) {
+        int a = 3;
+
         return "greetPage";
     }
 
     @GetMapping("/getdata")
     public RedditResponse fetchDataFromReddit() {
-
         String token1 = "Bearer " + token;
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://oauth.reddit.com/r/appletv/new?limit=100";
@@ -81,7 +82,7 @@ public class CommentController {
     }
 
     @GetMapping("db/find/{AuthorName}")
-    public List<MainObjective> findByAuthorNameMethod(@PathVariable String AuthorName) {
+    public List<MainObjective> findByAuthorNameMethod(@PathVariable String AuthorName) throws  InterruptedException {
         return redService.getAllByAuthorMethod(AuthorName);
     }
 
@@ -135,26 +136,30 @@ public class CommentController {
         List<Future<?>> futures = new ArrayList<>();
         for (BreakpointResponse breakpointResponse : responseList) {
             futures.add(executorService.submit(() -> {
+
                 String className = breakpointResponse.getClassName();
                 List<MethodInfo> method = breakpointResponse.getMethod();
                 CustomTransformers customTransformers = new CustomTransformers();
                 customTransformers.setClassName(className);
                 customTransformers.setMethod(method);
+
                 if (classesModified.containsKey(className)) {
                     classesModified.get(className).add(customTransformers);
-                } else {
-                    List<CustomTransformers> add = new ArrayList<>();
-                    add.add(customTransformers);
-                    classesModified.put(className, add);
+                } else{
+                    List<CustomTransformers> newListOfTransformer = new ArrayList<>();
+                    newListOfTransformer.add(customTransformers);
+                    classesModified.put(className, newListOfTransformer);
                 }
                 try {
                     AgentForInstrumentation.getInstrumentation().addTransformer(customTransformers, true);
-                    AgentForInstrumentation.getInstrumentation().retransformClasses(Class.forName(className.replace("/", ".")));
-                    List<CustomTransformers> add = new ArrayList<>();
-                    classesModified.put(className, add);
+                    Class<?> classNameForReTransformation = Class.forName(className.replace("/", "."));
+                    AgentForInstrumentation.getInstrumentation().retransformClasses(classNameForReTransformation);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+
             }));
         }
 
@@ -165,19 +170,20 @@ public class CommentController {
                 e.printStackTrace();
             }
         }
-        return "added breakpoint";
+        return "inserted successfully";
     }
 
     @GetMapping("remove/breakpoint/{classname}")
     public void removeBreakpoint(@PathVariable String classname) {
-
         String temporaryClassname = classname.replace(",", "/");
+            if(!classesModified.containsKey(classname)){
+                return;
+            }
         classesModified.get(temporaryClassname)
                 .stream()
-                .forEach(e -> AgentForInstrumentation.getInstrumentation().removeTransformer(e));
+                .forEach(element -> AgentForInstrumentation.getInstrumentation().removeTransformer(element));
 
         classesModified.remove(temporaryClassname);
-        return;
     }
 }
 
