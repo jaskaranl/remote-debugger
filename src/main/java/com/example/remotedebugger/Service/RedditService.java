@@ -29,11 +29,11 @@ public class RedditService {
         repo.insert(element);
     }
 
-    public List<MainObjective>findWith(String author) {
-       return repo.findByAuthor(author);
+    public List<MainObjective> findWith(String author) {
+        return repo.findByAuthor(author);
     }
 
-    public List<MainObjective>findKeyword(String keyword) {
+    public List<MainObjective> findKeyword(String keyword) {
         Query query = new Query();
         query.addCriteria(Criteria.where("selftext").regex(keyword));
         return mongoTemplate.find(query, MainObjective.class);
@@ -47,7 +47,7 @@ public class RedditService {
     public List<MainObjective> findWithByUsername(String username) {
         Query query = new Query();
         query.addCriteria(Criteria.where("author").regex(username));
-        return  mongoTemplate.find(query, MainObjective.class);
+        return mongoTemplate.find(query, MainObjective.class);
     }
 
     public List<Document> sorting() {
@@ -57,6 +57,7 @@ public class RedditService {
         List<Document> into = collection.aggregate(aggregationPipeline).into(new ArrayList<>());
         return into;
     }
+
     public List<MainObjective> all() {
         return repo.findAll();
     }
@@ -64,17 +65,19 @@ public class RedditService {
     public List<MainObjective> getAllByAuthorMethod(String authorName) {
         return repo.findByAuthor(authorName);
     }
+
     public List<MainObjective> getAllDataMethod() {
         List<MainObjective> all = repo.findAll();
         return all;
     }
 
     public void DeleteMethodd(String id) {
-         repo.deleteById(id);
+        repo.deleteById(id);
     }
+
     public void DeleteMethodAuthor(String author) {
         List<MainObjective> responseFromMongo = repo.findByAuthor(author);
-         repo.deleteByAuthor(author);
+        repo.deleteByAuthor(author);
     }
 
 }

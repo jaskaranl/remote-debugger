@@ -1,32 +1,29 @@
 package com.example.remotedebugger.controller;
 
 import com.example.remotedebugger.Service.RedditService;
-import com.example.remotedebugger.javaagent.CustomTranformers;
-import com.example.remotedebugger.javaagent.javaAgent;
+import com.example.remotedebugger.javaagent.AgentForInstrumentation;
+import com.example.remotedebugger.javaagent.CustomTransformers;
 import com.example.remotedebugger.pojo.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.instrument.UnmodifiableClassException;
-import java.lang.management.ManagementFactory;
-import com.sun.management.OperatingSystemMXBean;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.bson.Document;
-
 @RestController
 public class CommentController {
     String token;
-    private ExecutorService executorService = Executors.newFixedThreadPool(50);
-    private HashMap<String,List<CustomTranformers>> classesModified=new HashMap<>();
+    private ExecutorService executorService = Executors.newFixedThreadPool(20);
+    private  HashMap<String, List<CustomTransformers>>  classesModified = new HashMap<>();
     @Autowired
     private RedditService redService;
 
@@ -40,10 +37,9 @@ public class CommentController {
         String body = "grant_type=password&username=Correct_Jury_3674&password=jaanu@321";
         HttpEntity<String> request = new HttpEntity<>(body, headers);
         String authUrl = "https://www.reddit.com/api/v1/access_token";
-
         ResponseEntity<String> response = restTemplate.postForEntity(authUrl, request, String.class);
-
         Map<String, String> map;
+
         try {
             ObjectMapper mapper = new ObjectMapper();
             map = mapper.readValue(response.getBody(), new TypeReference<Map<String, String>>() {
@@ -57,7 +53,6 @@ public class CommentController {
 
     @GetMapping("/javaagent/{value}/{number}")
     public static String greet(@PathVariable int value, @PathVariable String number) {
-        OperatingSystemMXBean osBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
         return "greetPage";
     }
 
@@ -70,13 +65,12 @@ public class CommentController {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", token1);
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-
         ResponseEntity<RedditResponse> responseEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity, RedditResponse.class);
         final int SIZE = responseEntity.getBody().getData().getChildren().size();
         List<Child> children = responseEntity.getBody().getData().getChildren();
-//        for (int i = 0; i < SIZE; i++) {
-//            redService.storeInDB(children.get(i).getData());
-//        }
+        for (int i = 0; i < SIZE; i++) {
+            redService.storeInDB(children.get(i).getData());
+        }
         return responseEntity.getBody();
     }
 
@@ -104,8 +98,6 @@ public class CommentController {
 
     @GetMapping("db/all/{username}")
     public List<MainObjective> findWithByUsername(@PathVariable String username) {
-        //delete this line
-
         return redService.findWithByUsername(username);
     }
 
@@ -121,7 +113,6 @@ public class CommentController {
 
     @PostMapping("reddit/post")
     public String postReddit() {
-
         HttpHeaders head = new HttpHeaders();
         head.setBearerAuth(token);
         HttpEntity<String> request = new HttpEntity<>(head);
@@ -133,66 +124,60 @@ public class CommentController {
         String title = sc.nextLine();
         System.out.println("enter the text ");
         String text = sc.nextLine();
-
         String url = "https://oauth.reddit.com/api/submit?sr=" + sr + "&kind=self&text=" + text + "&title=" + title;
         ResponseEntity<RedditResponse> responseBackFromReddit = restTemplate.exchange(url, HttpMethod.POST, request, RedditResponse.class);
-
         return "submit";
-
     }
 
     @PostMapping("/addbreakpoint")
-    public String breakpoint(@RequestBody MultiBreakpoint response)
-            throws ClassNotFoundException, UnmodifiableClassException
-    {
-        List<BreakpointResponse> responseList=response.getResponseList();
+    public String breakpoint(@RequestBody MultiBreakpoint response) throws ClassNotFoundException, UnmodifiableClassException {
+        List<BreakpointResponse> responseList = response.getResponseList();
         List<Future<?>> futures = new ArrayList<>();
-        for (BreakpointResponse breakpointResponse:responseList) {
-
+        for (BreakpointResponse breakpointResponse : responseList) {
             futures.add(executorService.submit(() -> {
                 String className = breakpointResponse.getClassName();
                 List<MethodInfo> method = breakpointResponse.getMethod();
-                CustomTranformers customTranformers = new CustomTranformers();
-                customTranformers.setClassName(className);
-                customTranformers.setMethod(method);
-
-                if(classesModified.containsKey(className)){
-                    classesModified.get(className).add(customTranformers);
-                }else {
-                    List<CustomTranformers>add=new ArrayList<>();
-                    add.add(customTranformers);
+                CustomTransformers customTransformers = new CustomTransformers();
+                customTransformers.setClassName(className);
+                customTransformers.setMethod(method);
+                if (classesModified.containsKey(className)) {
+                    classesModified.get(className).add(customTransformers);
+                } else {
+                    List<CustomTransformers> add = new ArrayList<>();
+                    add.add(customTransformers);
                     classesModified.put(className, add);
                 }
-                javaAgent.getInstrumentation().addTransformer(customTranformers,true);
                 try {
-                    javaAgent.getInstrumentation().retransformClasses(Class.forName(className.replace("/", ".")));
-
+                    AgentForInstrumentation.getInstrumentation().addTransformer(customTransformers, true);
+                    AgentForInstrumentation.getInstrumentation().retransformClasses(Class.forName(className.replace("/", ".")));
+                    List<CustomTransformers> add = new ArrayList<>();
+                    classesModified.put(className, add);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }));
         }
+
         for (Future<?> future : futures) {
-        try {
-            future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         }
-    }
         return "added breakpoint";
     }
 
     @GetMapping("remove/breakpoint/{classname}")
-    public String removeBreakpoint(@PathVariable String classname)
-    {
+    public void removeBreakpoint(@PathVariable String classname) {
 
-    String temporaryClassname=classname.replace(",","/");
+        String temporaryClassname = classname.replace(",", "/");
         classesModified.get(temporaryClassname)
-                        .stream()
-                                .forEach(e-> System.out.println(javaAgent.getInstrumentation().removeTransformer(e)));
+                .stream()
+                .forEach(e -> AgentForInstrumentation.getInstrumentation().removeTransformer(e));
 
-       classesModified.remove(temporaryClassname);
-        return "transformers removed"+temporaryClassname;
+        classesModified.remove(temporaryClassname);
+        return;
     }
 }
 

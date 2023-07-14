@@ -3,11 +3,11 @@ package com.example.remotedebugger.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Data {
     private String after;
     private Integer dist;
-
     private String modhash;
     private List<Child> children;
 

@@ -45,6 +45,7 @@ public class MainObjective {
     public String getAuthorfullname() {
         return authorfullname;
     }
+
     @JsonProperty("author_fullname")
     public void setAuthorfullname(String authorfullname) {
         this.authorfullname = authorfullname;

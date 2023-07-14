@@ -8,7 +8,10 @@ public class CodeWithLineNumber {
         this.code = code;
         this.lineNumber = lineNumber;
     }
-    public CodeWithLineNumber(){}
+
+    public CodeWithLineNumber() {
+    }
+
     public String getCode() {
         return code;
     }

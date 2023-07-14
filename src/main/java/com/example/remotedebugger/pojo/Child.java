@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Child {
     private String kind;
     private MainObjective data;
+
     public String getKind() {
         return kind;
     }

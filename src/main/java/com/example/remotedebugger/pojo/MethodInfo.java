@@ -21,7 +21,10 @@ public class MethodInfo {
     public void setCodeToExecute(List<CodeWithLineNumber> codeToExecute) {
         this.codeToExecute = codeToExecute;
     }
-    public MethodInfo(){}
+
+    public MethodInfo() {
+    }
+
     public MethodInfo(String methodName, List<CodeWithLineNumber> codeToExecute) {
         this.methodName = methodName;
         this.codeToExecute = codeToExecute;
